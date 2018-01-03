@@ -1,10 +1,15 @@
+---
+# this will create a file with all of the rpms installed on a system under a file with the hostmae as a file name.
+# it will then create a folder called rpmlist-DATE with files in it for each host by hostname. You can "grep -r <rpm name> rpmlist-DATE"
+# to look for what RPMs are on each server, it then cleans up the files it created.
+# run this using ansible-playbook rpm-list.yml -bkK -u <username>
 - hosts: all
   tasks:
-    - copy:
-      src:
-
-- copy:
-    src: /etc/sudoers
-    dest: /etc/sudoers.edit
-    remote_src: yes
-    validate: /usr/sbin/visudo -cf %s
+   - name: creating the rpm list
+     raw: rpm -qa > ~/$HOSTNAME
+   - fetch:
+       src: ~/{{ ansible_nodename }}
+       dest: rpmlist-{{ lookup('pipe', 'date +%d-%m-%Y') }}/
+       flat: yes
+   - name: creating the rpm list
+     raw: rm -rf ~/$HOSTNAME
